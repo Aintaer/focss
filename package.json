@@ -4,7 +4,7 @@
   "description": "Graphics pipeline, but for the DOM",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/karma/bin/karma start"
+    "test": "karma start"
   },
   "repository": {
     "type": "git",

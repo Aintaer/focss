@@ -12,6 +12,12 @@ define(function() {
   var calculate,
     calculateSingle;
 
+  function blank(n) {
+    var str = '';
+    for (;n;--n) { str += ' '; }
+    return str;
+  }
+
   calculate = function(input) {
     var selectors,
       selector,
@@ -55,10 +61,9 @@ define(function() {
 
     // Find matches for a regular expression in a string and push their details to parts
     // Type is "a" for IDs, "b" for classes, attributes and pseudo-classes and "c" for elements and pseudo-elements
-    findMatch = function(regex, type) {
+    findMatch = function(regex, type, declaration) {
       var matches, i, len, match, index, length;
-      if (regex.test(selector)) {
-        matches = selector.match(regex);
+      if (matches = selector.match(regex)) {
         for (i = 0, len = matches.length; i < len; i += 1) {
           typeCount[type] += 1;
           match = matches[i];
@@ -68,10 +73,11 @@ define(function() {
             selector: match,
             type: type,
             index: index,
-            length: length
+            length: length,
+            declaration: declaration
           });
           // Replace this simple selector with whitespace so it won't be counted in further simple selectors
-          selector = selector.replace(match, Array(length + 1).join(' '));
+          selector = selector.replace(match, blank(length));
         }
       }
     };
@@ -92,26 +98,26 @@ define(function() {
         matches = selector.match(regex);
         for (i = 0, len = matches.length; i < len; i += 1) {
           match = matches[i];
-          selector = selector.replace(match, Array(match.length + 1).join(' '));
+          selector = selector.replace(match, blank(match.length));
         }
       }
     }());
 
     // Add attribute selectors to parts collection (type b)
-    findMatch(attributeRegex, 'b');
+    findMatch(attributeRegex, 'b', 'attribute');
 
     // Add ID selectors to parts collection (type a)
-    findMatch(idRegex, 'a');
+    findMatch(idRegex, 'a', 'id');
 
     // Add class selectors to parts collection (type b)
-    findMatch(classRegex, 'b');
+    findMatch(classRegex, 'b', 'class');
 
     // Add pseudo-element selectors to parts collection (type c)
-    findMatch(pseudoElementRegex, 'c');
+    findMatch(pseudoElementRegex, 'c', 'pseudo-element');
 
     // Add pseudo-class selectors to parts collection (type b)
-    findMatch(pseudoClassWithBracketsRegex, 'b');
-    findMatch(pseudoClassRegex, 'b');
+    findMatch(pseudoClassWithBracketsRegex, 'b', 'pseudo-class');
+    findMatch(pseudoClassRegex, 'b', 'pseudo-class');
 
     // Remove universal selector and separator characters
     selector = selector.replace(/[\*\s\+>~]/g, ' ');

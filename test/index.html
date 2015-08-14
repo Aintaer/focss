@@ -31,7 +31,7 @@ function addMore() {
 	}
 }
 
-var paused = false;
+var paused = true;
 function toggle() {
 	paused = !paused;
 }
@@ -62,12 +62,13 @@ function getStats() {
 
 require(['index'], function(Focss) {
   var fox = new Focss(section);
-	fox.insert('.box', {
+	fox.insert('.box:active', {
 		marginRight: { value: 'factor > 0 ? factor : -factor', unit: 'px' },
 		marginBottom: { value: 'factor > 0 ? factor : -factor', unit: 'px' }
 	});
 
-	var frame = 0
+	var frame = 0;
+  fox.process({ factor: 0 });
 	stats = getStats();
 	setInterval(function() {
 		stats.begin();

@@ -72,6 +72,8 @@ define([
       var affected, elements;
 
       if (this.specificity.length) {
+        console.log(this.specificity);
+        // If any part of the specificity is a pseudo, do alternate flow
         affected = css.find(this.computedSelector);
         elements = Array.prototype.slice.call(affected);
       }
