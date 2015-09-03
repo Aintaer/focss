@@ -3,9 +3,10 @@ define([
   'nbd/Class',
   'nbd/util/async',
   './Rule',
+  './EventTable',
   './eltable',
   '../util/css'
-], function(Class, async, Rule, eltable, css) {
+], function(Class, async, Rule, EventTable, eltable, css) {
   'use strict';
 
   function debounce(fn, ctxt) {
@@ -37,6 +38,10 @@ define([
         characterData: false,
         subtree: true
       });
+      this._events = new EventTable(target);
+      this._events.bind(function(event) {
+        this._eventMutated(event, this._events.get(event.type));
+      }.bind(this));
     },
 
     destroy: function() {
@@ -46,6 +51,8 @@ define([
         rule.destroy();
       });
       this.rules.length = 0;
+      this._events.destroy();
+      this._events = null;
     },
 
     /**
@@ -78,6 +85,12 @@ define([
       }
     },
 
+    _eventMutated: function(event, rules) {
+      rules.forEach(function(rule) {
+        rule.mark();
+      });
+    },
+
     process: function(payload) {
       this._state = payload;
 
@@ -89,6 +102,7 @@ define([
 
     insert: function(selector, spec) {
       var rule = new this.constructor.Rule(selector, spec);
+      rule._events = this._events;
       this.rules.push(rule);
 
       if (this._state) {

@@ -5,13 +5,20 @@ define([
   './eltable',
   '../util/css',
   '../util/expression',
-  '../util/specificity'
-], function(Class, extend, diff, eltable, css, expression, specificity) {
+  '../util/specificity',
+  '../util/pseudoevents'
+], function(Class, extend, diff, eltable, css, expression, specificity, pseudoevents) {
   'use strict';
   var computed = /\$\{([^\}]*?)\}/ig;
 
   function lookup(obj, prop) {
     return obj && obj[prop];
+  }
+
+  function collectPseudo(accum, part) {
+    return part.selector in pseudoevents ?
+      accum.concat(pseudoevents[part.selector]) :
+      accum;
   }
 
   var Rule = Class.extend({
@@ -64,6 +71,12 @@ define([
 
       this.computedSelector = selector;
       this.result = css.normalize(this.body(data, extensions));
+      this.specificity.forEach(function(selector) {
+        selector.parts.reduce(collectPseudo, [])
+        .forEach(function(event) {
+          this._events.get(event).add(this);
+        }, this);
+      }, this);
 
       this.mark(true);
     },
@@ -72,8 +85,7 @@ define([
       var affected, elements;
 
       if (this.specificity.length) {
-        console.log(this.specificity);
-        // If any part of the specificity is a pseudo, do alternate flow
+        // TODO: If any part of the specificity is a pseudo-element, do alternate flow
         affected = css.find(this.computedSelector);
         elements = Array.prototype.slice.call(affected);
       }
